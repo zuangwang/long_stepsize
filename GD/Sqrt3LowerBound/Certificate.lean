@@ -1,4 +1,4 @@
-import GD.Sqrt3LowerBound.RankCutoff
+import GD.Sqrt3LowerBound.FinitePrefix
 
 /-!
 # The finite cutoff scan and the schedule certificate
@@ -253,6 +253,197 @@ theorem completeCutoffScan
                 nlinarith [mul_le_mul_of_nonneg_left hpowOne hcap.le]
       exact hleft.trans htop
 
+/-- Witness-preserving form of `completeCutoffScan`.  Any downward-closed
+predicate of scalar bounds can be scanned, so in particular the predicate
+"some concrete marked chain has at least this contribution" survives the
+case split. -/
+theorem completeCutoffScan_mono
+    (N : ℕ) (cap : ℝ) (δ : ℕ → ℝ) (P : ℝ → Prop)
+    (hmono : ∀ {a b : ℝ}, a ≤ b → P b → P a)
+    (hcap : 0 < cap)
+    (hδpos : ∀ i < N, 0 < δ i)
+    (hδsorted : Antitone δ)
+    (hlowDensity : ∀ q, 3 ≤ q → q ≤ N →
+      rankDensity N cap δ q ≤ densityThreshold →
+        P (1 / (5 * rankMass N cap δ q)))
+    (hfinite : ∀ q, q ≤ min 3 N →
+      P (finiteCutoffConstant / rankMass N cap δ q)) :
+    P (scheduleConstant /
+      (cap * ((N + 1 : ℕ) : ℝ) ^ (criticalExponent - 1))) := by
+  classical
+  let low : ℕ → Prop := fun q ↦
+    3 ≤ q ∧ rankDensity N cap δ q ≤ densityThreshold
+  by_cases hLow : ∃ q, q ≤ N ∧ low q
+  · let k := Nat.findGreatest low N
+    obtain ⟨q, hqN, hqLow⟩ := hLow
+    have hkLow : low k := Nat.findGreatest_spec hqN hqLow
+    have hk : 3 ≤ k := hkLow.1
+    have hkN : k ≤ N := Nat.findGreatest_le N
+    have hdense : ∀ r, k < r → r ≤ N →
+        densityThreshold < rankDensity N cap δ r := by
+      intro r hkr hrN
+      have hnot := Nat.findGreatest_is_greatest (P := low) hkr hrN
+      have hr3 : 3 ≤ r := hk.trans (Nat.le_of_lt hkr)
+      dsimp [low] at hnot
+      exact lt_of_not_ge (fun h ↦ hnot ⟨hr3, h⟩)
+    have htransport := tailBudgetTransport N cap δ k hk hkN hcap
+      hδpos hδsorted hdense
+    have hMk := rankMass_pos N cap δ k hkN hcap
+      (fun i hi ↦ (hδpos i hi).le)
+    have ha : 0 < (3 : ℝ) ^ (criticalExponent - 1) :=
+      Real.rpow_pos_of_pos (by norm_num) _
+    have hkPow :
+        (3 : ℝ) ^ (criticalExponent - 1) ≤
+          (k : ℝ) ^ (criticalExponent - 1) := by
+      apply Real.rpow_le_rpow
+      · norm_num
+      · exact_mod_cast hk
+      · exact (sub_pos.mpr criticalExponent_gt_one).le
+    have htransportThree :
+        rankMass N cap δ k * (3 : ℝ) ^ (criticalExponent - 1) ≤
+          propagationConstant * cap * (N : ℝ) ^ (criticalExponent - 1) :=
+      (mul_le_mul_of_nonneg_left hkPow hMk.le).trans htransport
+    have hNpos : 0 < (N : ℝ) ^ (criticalExponent - 1) := by
+      apply Real.rpow_pos_of_pos
+      exact_mod_cast (show 0 < N by omega)
+    have hNsuccPos : 0 < ((N + 1 : ℕ) : ℝ) ^ (criticalExponent - 1) :=
+      Real.rpow_pos_of_pos (by positivity) _
+    have hreciprocal := transport_to_reciprocal_bound
+      hMk hcap ha hNpos hNsuccPos propagationConstant_pos
+      (show 0 ≤ (1 / 5 : ℝ) by norm_num) htransportThree
+      (nat_rpow_succ_mono N)
+    have hcoefficient :
+        scheduleConstant ≤ (1 / 5 : ℝ) *
+          (3 : ℝ) ^ (criticalExponent - 1) / propagationConstant := by
+      calc
+        scheduleConstant ≤
+            ((3 : ℝ) ^ (criticalExponent - 1) / propagationConstant) *
+              min (1 / 5) finiteCutoffConstant := min_le_right _ _
+        _ ≤ ((3 : ℝ) ^ (criticalExponent - 1) / propagationConstant) *
+              (1 / 5) := by
+                gcongr
+                exact div_nonneg (Real.rpow_nonneg (by norm_num) _)
+                  propagationConstant_pos.le
+                exact min_le_left _ _
+        _ = (1 / 5 : ℝ) *
+              (3 : ℝ) ^ (criticalExponent - 1) / propagationConstant := by ring
+    have hden : 0 < cap * ((N + 1 : ℕ) : ℝ) ^ (criticalExponent - 1) :=
+      mul_pos hcap hNsuccPos
+    have hgoal :
+        scheduleConstant /
+            (cap * ((N + 1 : ℕ) : ℝ) ^ (criticalExponent - 1)) ≤
+          1 / (5 * rankMass N cap δ k) := by
+      calc
+        scheduleConstant /
+            (cap * ((N + 1 : ℕ) : ℝ) ^ (criticalExponent - 1)) ≤
+          (((1 / 5 : ℝ) *
+              (3 : ℝ) ^ (criticalExponent - 1) / propagationConstant) /
+            (cap * ((N + 1 : ℕ) : ℝ) ^ (criticalExponent - 1))) :=
+              div_le_div_of_nonneg_right hcoefficient hden.le
+        _ ≤ (1 / 5 : ℝ) / rankMass N cap δ k := hreciprocal
+        _ = 1 / (5 * rankMass N cap δ k) := by ring
+    exact hmono hgoal (hlowDensity k hk hkN hkLow.2)
+  · by_cases hNlarge : 3 ≤ N
+    · have hdense : ∀ q, 3 < q → q ≤ N →
+          densityThreshold < rankDensity N cap δ q := by
+        intro q hq3 hqN
+        exact lt_of_not_ge fun h ↦ hLow ⟨q, hqN, ⟨by omega, h⟩⟩
+      have htransport := tailBudgetTransport N cap δ 3 (by omega) hNlarge
+        hcap hδpos hδsorted hdense
+      have hM3 := rankMass_pos N cap δ 3 hNlarge hcap
+        (fun i hi ↦ (hδpos i hi).le)
+      have ha : 0 < (3 : ℝ) ^ (criticalExponent - 1) :=
+        Real.rpow_pos_of_pos (by norm_num) _
+      have hNpos : 0 < (N : ℝ) ^ (criticalExponent - 1) := by
+        apply Real.rpow_pos_of_pos
+        exact_mod_cast (show 0 < N by omega)
+      have hNsuccPos : 0 < ((N + 1 : ℕ) : ℝ) ^ (criticalExponent - 1) :=
+        Real.rpow_pos_of_pos (by positivity) _
+      have hreciprocal := transport_to_reciprocal_bound
+        hM3 hcap ha hNpos hNsuccPos propagationConstant_pos
+        finiteCutoffConstant_pos.le htransport (nat_rpow_succ_mono N)
+      have hcoefficient :
+          scheduleConstant ≤ finiteCutoffConstant *
+            (3 : ℝ) ^ (criticalExponent - 1) / propagationConstant := by
+        calc
+          scheduleConstant ≤
+              ((3 : ℝ) ^ (criticalExponent - 1) / propagationConstant) *
+                min (1 / 5) finiteCutoffConstant := min_le_right _ _
+          _ ≤ ((3 : ℝ) ^ (criticalExponent - 1) / propagationConstant) *
+                finiteCutoffConstant := by
+                  gcongr
+                  exact div_nonneg (Real.rpow_nonneg (by norm_num) _)
+                    propagationConstant_pos.le
+                  exact min_le_right _ _
+          _ = finiteCutoffConstant *
+                (3 : ℝ) ^ (criticalExponent - 1) / propagationConstant := by ring
+      have hden : 0 < cap * ((N + 1 : ℕ) : ℝ) ^ (criticalExponent - 1) :=
+        mul_pos hcap hNsuccPos
+      have hgoal :
+          scheduleConstant /
+              (cap * ((N + 1 : ℕ) : ℝ) ^ (criticalExponent - 1)) ≤
+            finiteCutoffConstant / rankMass N cap δ 3 := by
+        calc
+          scheduleConstant /
+              (cap * ((N + 1 : ℕ) : ℝ) ^ (criticalExponent - 1)) ≤
+            ((finiteCutoffConstant *
+                (3 : ℝ) ^ (criticalExponent - 1) / propagationConstant) /
+              (cap * ((N + 1 : ℕ) : ℝ) ^ (criticalExponent - 1))) :=
+                div_le_div_of_nonneg_right hcoefficient hden.le
+          _ ≤ finiteCutoffConstant / rankMass N cap δ 3 := hreciprocal
+      exact hmono hgoal (hfinite 3 (by simp [hNlarge]))
+    · have hNsmall : N ≤ 3 := by omega
+      have htop := hfinite N (by simp [hNsmall])
+      rw [rankMass_at_top] at htop
+      have hpowOne :
+          1 ≤ ((N + 1 : ℕ) : ℝ) ^ (criticalExponent - 1) := by
+        have hbase : (1 : ℝ) ≤ ((N + 1 : ℕ) : ℝ) := by
+          exact_mod_cast (show 1 ≤ N + 1 by omega)
+        simpa using Real.one_le_rpow hbase
+          (sub_pos.mpr criticalExponent_gt_one).le
+      have hScheduleFinite : scheduleConstant ≤ finiteCutoffConstant :=
+        min_le_left _ _
+      have hden : 0 < cap * ((N + 1 : ℕ) : ℝ) ^ (criticalExponent - 1) :=
+        mul_pos hcap (Real.rpow_pos_of_pos (by positivity) _)
+      have hgoal :
+          scheduleConstant /
+              (cap * ((N + 1 : ℕ) : ℝ) ^ (criticalExponent - 1)) ≤
+            finiteCutoffConstant / cap := by
+        apply (div_le_div_iff₀ hden hcap).2
+        calc
+          scheduleConstant * cap ≤ finiteCutoffConstant * cap := by gcongr
+          _ ≤ finiteCutoffConstant *
+              (cap * ((N + 1 : ℕ) : ℝ) ^ (criticalExponent - 1)) := by
+                have hc := finiteCutoffConstant_pos.le
+                nlinarith [mul_le_mul_of_nonneg_left hpowOne hcap.le]
+      exact hmono hgoal htop
+
+/-- Proposition 6.3 instantiated for a nonnegative finite schedule.  The
+result contains the marked chain selected by the scan. -/
+theorem scheduleCutoffContribution {T : ℕ} {α : Fin T → ℝ}
+    (hα : ∀ t, 0 ≤ α t) :
+    HasChainContribution α hα
+      (scheduleConstant /
+        (cappedMass α *
+          ((positiveSurplusCount α + 1 : ℕ) : ℝ) ^
+            (criticalExponent - 1))) := by
+  apply completeCutoffScan_mono
+    (positiveSurplusCount α) (cappedMass α) (rankedSurplus α)
+    (HasChainContribution α hα)
+  · intro a b hab hb
+    exact HasChainContribution.mono hab hb
+  · exact cappedMass_pos hα
+  · intro i hi
+    exact rankedSurplus_pos α hi
+  · exact rankedSurplus_antitone α
+  · intro q hq3 hqN hdensity
+    exact scheduleHalfDensityContribution hα q (by omega) hqN hdensity
+  · intro q hq
+    have hq3 : q ≤ 3 := hq.trans (min_le_left _ _)
+    have hqN : q ≤ positiveSurplusCount α := hq.trans (min_le_right _ _)
+    simpa [finiteCutoffConstant] using
+      scheduleFiniteCutoffContribution hα q hq3 hqN
+
 /-- The report's normalized horizon simplification: the cap and number of
 positive surpluses each cost at most one factor of `T + 1`. -/
 theorem normalizedHorizonBound
@@ -296,6 +487,25 @@ theorem normalizedHorizonBound
           (cap * ((N + 1 : ℕ) : ℝ) ^ (criticalExponent - 1)) := by
     exact div_le_div_of_nonneg_left hconst hsmallDen hdenBound
   exact hfrac.trans hcertificate
+
+/-- The witness-preserving normalized horizon bound for an arbitrary
+nonnegative schedule of length `T`. -/
+theorem scheduleHorizonContribution {T : ℕ} {α : Fin T → ℝ}
+    (hα : ∀ t, 0 ≤ α t) :
+    HasChainContribution α hα
+      (scheduleConstant / ((T + 1 : ℕ) : ℝ) ^ criticalExponent) := by
+  have hscan := scheduleCutoffContribution hα
+  have hcapT : cappedMass α ≤ T + 1 := cappedMass_le_horizon hα
+  have hNT : positiveSurplusCount α + 1 ≤ T + 1 := by
+    exact Nat.add_le_add_right (positiveSurplusCount_le α) 1
+  have hscalar := normalizedHorizonBound T (positiveSurplusCount α)
+    (cappedMass α)
+    (scheduleConstant /
+      (cappedMass α *
+        ((positiveSurplusCount α + 1 : ℕ) : ℝ) ^
+          (criticalExponent - 1)))
+    (cappedMass_pos hα) hcapT hNT le_rfl
+  exact HasChainContribution.mono hscalar hscan
 
 /-- The universal lower-bound constant used in the physical theorem. -/
 noncomputable def lowerBoundConstant : ℝ := scheduleConstant / 2

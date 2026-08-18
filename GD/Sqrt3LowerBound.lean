@@ -1,4 +1,4 @@
-import GD.Sqrt3LowerBound.Realization
+import GD.Sqrt3LowerBound.UniversalTheorem
 
 /-!
 # Universal predetermined-stepsize GD lower bound at `sqrt 3`

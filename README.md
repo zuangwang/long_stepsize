@@ -54,16 +54,24 @@ theorem collection, or [`GD.lean`](GD.lean) for the package root.
 | Exact temporal inverse product and half-density bound | `TemporalProduct.lean` | `exactTemporalProduct`, `globalTemporalProduct`, `halfDensityCertificate` |
 | Neighboring cutoffs and endpoint Lyapunov drift | `RankCutoff.lean` | `rankMass_ratio`, `rankDensity_recurrence`, `oneStepLyapunovDrift` |
 | Tail-budget transport | `RankCutoff.lean` | `coreTailBudgetTransport`, `tailBudgetTransport` |
-| Finite constant, complete scan, horizon, and scaling | `Certificate.lean` | `uniformFiniteCutoffConstant`, `completeCutoffScan`, `normalizedHorizonBound`, `physicalScalingBound` |
+| Concrete schedule, chronological chains, and scalar contribution | `Schedule.lean` | `scheduleChainData`, `scheduleChainData_contribution`, `HasChainContribution` |
+| Schedule normalization and half-density witness | `ScheduleNormalization.lean`, `ScheduleCertificate.lean` | `normalizedChainContribution`, `scheduleHalfDensityContribution` |
+| Bounded-rank finite-prefix witness | `FinitePrefix.lean` | `scheduleFiniteCutoffContribution` |
+| Finite constant, witness-preserving scan, and horizon | `Certificate.lean` | `uniformFiniteCutoffConstant`, `completeCutoffScan_mono`, `scheduleHorizonContribution` |
 | Explicit universal constant | `Certificate.lean` | `explicitLowerBoundConstant` |
-| Marked-stage terminal algebra and proof composition | `Realization.lean` | `markedStageRealizedGap_of_rho`, `sqrtThreeLowerBound_from_certificate` |
+| Finite-polytope Moreau envelope | `MoreauEnvelope.lean` | `finiteEnvelope_hasGradient`, `finiteEnvelope_one_smooth` |
+| Marked-stage geometry and exact projections | `MarkedStage.lean` | `internalProjection`, `terminalProjection`, `finalEnvelopeGap` |
+| Literal GD trajectory for a selected chain | `ScheduleTrajectory.lean` | `scheduleState_step`, `chainNormalizedInstance` |
+| Prescribed initialization and physical scaling | `UniversalTheorem.lean` | `physicalize`, `universalSqrtThreeLowerBound` |
 
-All checked declarations are constructive theorem proofs over Mathlib: the
-development contains no `sorry`, `admit`, or project axioms.  The realization
-module checks the exact marked-stage amplitude and terminal Moreau-envelope
-value algebra.  Its final composition theorem exposes the two scalar
-certificate obligations explicitly, matching the temporal-product and
-finite-prefix branches of the report.
+All checked declarations are theorem proofs over Mathlib: the development
+contains no `sorry`, `admit`, or project axioms.  The final theorem
+`universalSqrtThreeLowerBound` is unconditional apart from the hypotheses in
+the paper (`T ≥ 1`, `L,R > 0`, and a nonnegative predetermined schedule).  It
+constructs a dimension `d ≤ T + 1`; for every prescribed initial point it
+constructs a convex differentiable objective with `L`-Lipschitz gradient, a
+minimizer at distance `R`, the literal GD trajectory, and the claimed
+last-iterate gap with the explicit positive universal constant.
 
 ## Results
 
