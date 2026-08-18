@@ -13,6 +13,9 @@ Manifest.toml
 *.ji
 *.cov
 
+# Lean build artifacts and downloaded dependencies
+.lake/
+
 # Other local environments and dependency caches
 .venv/
 venv/
