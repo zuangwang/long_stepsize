@@ -1,0 +1,34 @@
+# Credentials and local secrets
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Julia environments, caches, and compiled output
+Manifest.toml
+.julia/
+*.ji
+*.cov
+
+# Other local environments and dependency caches
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+
+# Temporary and scratch output
+tmp/
+scratch/
+*.tmp
+*.temp
+*.log
+*.swp
+*~
+
+# Platform and editor metadata
+.DS_Store
+.idea/
+.vscode/

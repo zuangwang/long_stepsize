@@ -1,0 +1,7 @@
+name = "GD"
+uuid = "33167a9b-c521-4b52-bb7f-946179203865"
+authors = ["Zuang Wang"]
+version = "0.1.0"
+
+[compat]
+julia = "1.12"
