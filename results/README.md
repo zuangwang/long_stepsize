@@ -1,7 +1,9 @@
 # Technical reports
 
-- [Square-root-three lower bound](sqrt3_lower_bound_report.pdf) — the
-  hash-pinned self-contained report, with [LaTeX source](sqrt3_lower_bound_report.tex).
+- [Combined square-root-three and anytime-transfer report](sqrt3_lower_bound_report.pdf)
+  — the self-contained analytic \(\sqrt3\) theorem together with the audited
+  suffix-local transfer and improved anytime ceiling, with
+  [LaTeX source](sqrt3_lower_bound_report.tex).
 - [Predetermined-to-anytime transfer addendum](../output/pdf/predetermined_anytime_transfer_addendum.pdf)
   — the suffix-local compiler and current paired research ceilings, with
   [LaTeX source](predetermined_anytime_transfer_addendum.tex).
