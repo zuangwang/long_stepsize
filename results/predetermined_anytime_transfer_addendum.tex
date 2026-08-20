@@ -1,0 +1,390 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.85in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools,mathrsfs}
+\IfFileExists{newtxtext.sty}{%
+  \usepackage{newtxtext,newtxmath}%
+}{%
+  \usepackage{mathptmx}%
+}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[
+  colorlinks=true,
+  linkcolor=blue!45!black,
+  urlcolor=blue!45!black
+]{hyperref}
+
+\allowdisplaybreaks
+\setlist[enumerate]{leftmargin=1.8em,itemsep=0.25em,topsep=0.4em}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\R}{\mathbb R}
+\newcommand{\Risk}{\mathcal R}
+\newcommand{\Transfer}{\mathcal T}
+\newcommand{\silver}{\mathrm{sil}}
+
+\title{\bfseries
+Predetermined-to-Anytime Transfer for Gradient Descent\\
+\large A Suffix-Local Addendum}
+\author{Zuang Wang and Dandan Wang}
+\date{August 20, 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We record the precise transfer property connecting two lower-bound regimes
+for last-iterate gradient descent on smooth convex functions.  By class
+inclusion alone, a generic finite-horizon minimax ceiling transfers to an
+anytime ceiling at the same exponent.  The stronger map
+\[
+ \Transfer(p)=\frac{2p}{1+p}
+\]
+requires more information: the same finite-horizon hard-instance certificate
+must localize to every relevant ranked suffix at record prefixes.  We give a
+self-contained suffix-local compiler theorem and its near/far proof.  The
+currently audited joint-router certificate satisfies the compiler interfaces,
+so one computer-assisted package proves simultaneously
+\[
+ \boxed{
+ p_{\rm minimax}\le\frac{165737}{100000}=1.65737,
+ \qquad
+ q_{\rm any}\le\frac{331474}{265737}
+ =1.2473761651557743\ldots .}
+\]
+These are supremal-exponent ceilings.  We do not claim endpoint attainment,
+a positive uniform constant at either endpoint, or an endpoint
+\(\mathrm{not}\text{-}o\) statement.
+\end{abstract}
+
+\section{Two schedule models}
+
+Let \(\Risk_n(h_0,\ldots,h_{n-1})\) be the normalized worst-case
+last-iterate objective gap of gradient descent over convex functions with
+one-Lipschitz gradient.  All stepsizes below are nonnegative and fixed before
+oracle information is observed.
+
+In the predetermined-horizon model, the horizon is announced first and a
+different finite schedule may be chosen for each horizon.  Define
+\[
+ p_{\rm minimax}:=\sup\left\{p\ge0:
+ \begin{array}{l}
+ \text{there are \(C<\infty\) and schedules \(h^{(T)}\) such that}\\[-1mm]
+ \Risk_T(h^{(T)})\le C(T+1)^{-p}\text{ for every \(T\ge1\)}
+ \end{array}\right\}.
+\]
+
+In the anytime model, one infinite schedule must work at every sufficiently
+late deterministic prefix:
+\[
+ q_{\rm any}:=\sup\left\{q\ge0:
+ \begin{array}{l}
+ \text{there are one infinite schedule \(h\), \(C<\infty\), and \(n_0\)}\\[-1mm]
+ \text{such that \(\Risk_n(h_0,\ldots,h_{n-1})\le C(n+1)^{-q}\)}\\[-1mm]
+ \text{for every \(n\ge n_0\)}
+ \end{array}\right\}.
+\]
+The anytime class is more constrained because its finite prefixes must be
+compatible with one another.
+
+\begin{proposition}[Black-box prefix transfer]
+\label{prop:black-box}
+If a universal finite-horizon theorem proves
+\(\Risk_T(g)\ge c(T+1)^{-p}\) for every length-\(T\) schedule \(g\), then
+every infinite schedule obeys the same lower bound at every prefix.  Hence
+\(q_{\rm any}\le p\).
+\end{proposition}
+
+\begin{proof}
+Apply the finite-horizon theorem to the first \(T\) steps of the infinite
+schedule.  No compatibility beyond taking a prefix is needed.
+\end{proof}
+
+Proposition~\ref{prop:black-box} does \emph{not} yield the smaller exponent
+\(2p/(1+p)\).  That stronger conclusion uses internal, suffix-local data from
+the hard-instance proof.
+
+\section{The suffix-local transfer compiler}
+
+Fix \(0<a<1\) and put
+\begin{equation}
+ p:=1+a,\qquad b:=\frac2a,\qquad
+ \Theta_*:=\frac1{a(a+2)}=\frac1{p^2-1},\qquad
+ \Transfer(p):=\frac{2p}{1+p}=\frac{2(1+a)}{2+a}.
+ \label{eq:parameters}
+\end{equation}
+
+For a finite schedule, write its positive excesses in decreasing order as
+\(c_1\ge\cdots\ge c_r>0\), and define
+\begin{equation}
+ B:=1+\sum_{t<n}\min\{h_t,1\},\qquad
+ D_j:=B+\sum_{i=j+1}^r c_i.
+ \label{eq:ranked-state}
+\end{equation}
+Thus \(D_0=1+\sum_{t<n}h_t\), \(D_r=B\), \(B\le n+1\), and
+\(r\le n\).
+
+\begin{theorem}[Suffix-local transfer]
+\label{thm:compiler}
+Suppose one fixed chronological ranked-path certificate has the following
+properties uniformly at every deterministic prefix.
+
+\begin{enumerate}
+\item The empty-chain and strict-record hard instances give
+\begin{equation}
+ \Risk_n\ge\frac1{2D_0-1},
+ \qquad
+ c_1\le D_0\sqrt{\Risk_n}
+ \label{eq:record-arms}
+\end{equation}
+at every prefix whose last step is a strict record exceeding one.
+
+\item For every \(2\le q\le r\), all top-\(q\) excesses and all
+\(q-1\) chronological edges occur in a hard-instance bound
+\begin{equation}
+ \mathcal C_n(h)\ge\frac{c_{\rm J}}{D_q}
+ \exp\left\{\mu(z+q-S_v)
+ +\sum_{i=1}^{q-1}\Delta(v_i,v_{i+1})\right\},
+ \label{eq:chronological-path}
+\end{equation}
+where \(c_{\rm J}>0\), \(0<\mu\le1\), \(z\ge0\),
+\(S_v=\sum_i v_i\), and \((v_i)\) is a chronological permutation of
+\[
+ \widehat v_i=\frac{2D_q}{qc_i},\qquad 1\le i\le q.
+\]
+The normalized worst-case risk satisfies \(\Risk_n(h)\ge\mathcal C_n(h)\).
+
+\item Fix finite thresholds \(0<t_0<\cdots<t_{M-1}<\infty\), and set
+\[
+ \alpha_\ell:=\frac1q\#\{i:v_i\le t_\ell\},\qquad
+ k_\ell:=q\alpha_\ell,
+\]
+\[
+ \mathscr R_\ell(\alpha):=1+
+ 2\sum_{u=\ell}^{M-2}\frac{\alpha_{u+1}-\alpha_u}{t_u}
+ +\frac{2(1-\alpha_{M-1})}{t_{M-1}}.
+\]
+The exact denominator router, including zero occupancy, satisfies
+\[
+ \frac{D_{k_\ell}}{D_q}\le\mathscr R_\ell(\alpha).
+\]
+Every state row with positive dual weight is either a cumulative occupancy
+monotonicity row or a globally valid affine tangent row
+\[
+ \mathscr R_{\ell(m)}(\alpha)\ge T_m(\alpha_{\ell(m)}),
+ \qquad T_m(x)\le x^{-a}\quad(0<x\le1).
+\]
+There is no positive-weight mean row or other state row, and
+\[
+ H:=\max_m\sup_{0\le x\le1}T_m(x)<\infty.
+\]
+
+\item There are finite \(Q\) and \(B_0\) such that every supported state
+with \(q\ge Q\) satisfies the signed finite-rank estimate
+\[
+ \frac1q\sum_{i=1}^{q-1}\Delta(v_i,v_{i+1})\ge B_0.
+\]
+This estimate includes all physical edges, endpoint corrections, and the
+unbounded state group.  Its endpoint reserve
+\[
+ \mathfrak r:=B_0-\mu(2\Theta_*-1)
+\]
+is positive.  There is a finite localization factor \(\Lambda>1\) with
+\begin{equation}
+ \Lambda^a\ge H,
+ \qquad
+ \delta:=\mathfrak r-\frac{\mu b}{\Lambda}>0.
+ \label{eq:localization-reserve}
+\end{equation}
+\end{enumerate}
+
+Then no infinite predetermined schedule satisfies
+\(\Risk_n=O(n^{-s})\) for any \(s>\Transfer(p)\).  Consequently,
+\begin{equation}
+ \boxed{q_{\rm any}\le\Transfer(p)=\frac{2p}{1+p}.}
+ \label{eq:transfer}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Assume that one infinite schedule satisfies
+\(\Risk_n\le A n^{-s}\) for some \(s>\Transfer(p)>1\).  The empty-chain
+arm rules out bounded steps, so there are arbitrarily late strict-record
+prefixes.  At such a prefix write \(\epsilon=\Risk_n\), choose
+\[
+ \eta=\frac1{4\Lambda},
+ \qquad
+ k=\left\lfloor\frac{\eta}{\sqrt\epsilon}\right\rfloor,
+\]
+and let \(q\) minimize \(P_j:=D_jj^a\) over \(k\le j\le r\).
+For late records, \(k\ge\eta/(2\sqrt\epsilon)\).  The record arms imply
+\begin{equation}
+ D_m\ge(1-\eta)D_0\ge\frac{1-\eta}{2\epsilon}
+ \qquad(0\le m\le\min\{k,r\}).
+ \label{eq:record-mass}
+\end{equation}
+In particular, eventually \(r\ge k\).
+Indeed, if \(r<k\), then \eqref{eq:record-mass} with \(m=r\) gives
+\(B=D_r\ge c/\epsilon\), contradicting \(B\le n+1\),
+\(\epsilon\le An^{-s}\), and \(s>1\).
+
+If \(q<\Lambda k\), then \(D_q>3D_0/4\), while suffix minimality and
+\(B\le n+1\), \(r\le n\) give
+\[
+ c\epsilon^{-(p+1)/2}
+ \le D_kk^a
+ \le\frac43D_qq^a
+ \le\frac43Br^a
+ \le\frac43(n+1)^p.
+\]
+Therefore
+\[
+ \epsilon\ge c'(n+1)^{-2p/(1+p)},
+\]
+contradicting \(s>\Transfer(p)\).
+
+Suppose instead that \(q\ge\Lambda k\), and put \(\tau=k/q\le1/\Lambda\).
+Suffix minimality first gives the boundary floor
+\(0<\widehat v_i\le b\).  It also validates every supported tangent row.
+Indeed, if \(\alpha_\ell\ge\tau\), then \(k_\ell\ge k\) and
+\[
+ \mathscr R_\ell(\alpha)\ge\frac{D_{k_\ell}}{D_q}
+ \ge\left(\frac q{k_\ell}\right)^a
+ =\alpha_\ell^{-a}\ge T_m(\alpha_\ell).
+\]
+If \(\alpha_\ell<\tau\), then \(k_\ell<k\) and
+\[
+ \mathscr R_\ell(\alpha)\ge\frac{D_{k_\ell}}{D_q}
+ \ge\frac{D_k}{D_q}\ge\left(\frac qk\right)^a
+ \ge\Lambda^a\ge H\ge T_m(\alpha_\ell).
+\]
+The latter argument includes \(\alpha_\ell=0\), so no \(0^{-a}\) is
+evaluated.  Suffix minimality also yields weak reciprocal supermajorization
+against \(b((i-1/2)/q)^p\).  Convex midpoint quadrature then controls the
+actual full-path mean without deleting a vertex or edge:
+\begin{equation}
+ S_v\le q\left(2\Theta_*+\frac b\Lambda\right).
+ \label{eq:physical-mean}
+\end{equation}
+Since \(q\ge\Lambda k\ge c\epsilon^{-1/2}\ge c'n^{s/2}\), eventually
+\(q\ge Q\).  Item 4 and equations \eqref{eq:chronological-path},
+\eqref{eq:localization-reserve}, and \eqref{eq:physical-mean} imply
+\begin{equation}
+ \mathcal C_n(h)\ge c_{\rm J}\frac{e^{\delta q}}{D_q}.
+ \label{eq:far-arm}
+\end{equation}
+Since \(D_qq^a\le Br^a\le(n+1)^p\), the assumed risk upper bound and
+\eqref{eq:far-arm} force \(q=O(\log n)\).  On the other hand,
+\(q\ge\Lambda k\ge c\epsilon^{-1/2}\ge c'n^{s/2}\), a contradiction.
+The near and far branches prove \eqref{eq:transfer}.
+\end{proof}
+
+\section{Current exact instantiation}
+
+\begin{corollary}[Audited paired ceilings]
+\label{cor:instantiation}
+The independently audited joint-router certificate at
+\[
+ p=\frac{165737}{100000},\qquad
+ a=\frac{65737}{100000},\qquad
+ \mu=\frac{8161}{10000}
+\]
+satisfies every hypothesis of Theorem~\ref{thm:compiler}.  It has
+\[
+ Q=10^9,\qquad
+ B_0=\frac{118264177243}{10^{12}},\qquad
+ H=\frac{63159358713716857163}{1250000000000000000}<60.
+\]
+Taking \(\Lambda=10^6\), the remaining exact suffix reserve is
+\[
+ \delta=
+ \frac{133808620593933067}
+ {17468753169000000000000}>0.
+\]
+\begin{equation}
+ \boxed{
+ p_{\rm minimax}\le\frac{165737}{100000}=1.65737,
+ \qquad
+ q_{\rm any}\le\frac{331474}{265737}
+ =1.2473761651557743\ldots .}
+ \label{eq:paired-result}
+\end{equation}
+\end{corollary}
+
+The known silver constructions give the complementary achievable exponents.
+Writing \(s_\silver=\log_2(1+\sqrt2)\), the current audited research
+intervals are therefore
+\begin{equation}
+ \boxed{
+ s_\silver\le p_{\rm minimax}\le\frac{165737}{100000},
+ \qquad
+ \frac{2s_\silver}{1+s_\silver}
+ \le q_{\rm any}\le\frac{331474}{265737}.}
+ \label{eq:intervals}
+\end{equation}
+Numerically, the constructive anytime endpoint is
+\(2s_\silver/(1+s_\silver)=1.119545204061651\ldots\).
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{@{}lll@{}}
+\toprule
+Regime & achievable exponent & universal ceiling\\
+\midrule
+Predetermined horizon
+ & \(\log_2(1+\sqrt2)=1.2715533\ldots\)
+ & \(165737/100000=1.65737\)\\
+Anytime
+ & \(1.119545204061651\ldots\)
+ & \(331474/265737=1.2473761651\ldots\)\\
+\bottomrule
+\end{tabular}
+\caption{Current independently audited research intervals.  Smaller universal
+ceilings are stronger.}
+\end{table}
+
+\clearpage
+\section{Scope and evidence}
+
+Theorem~\ref{thm:compiler} transfers a \emph{certificate}, not merely a
+number.  In particular, the implication
+\[
+ p_{\rm minimax}\le p
+ \quad\Longrightarrow\quad
+ q_{\rm any}\le\frac{2p}{1+p}
+\]
+is not valid as a black-box theorem.  A finite-horizon induction may compress
+past the suffix selected at a stopping-time record and therefore fail to
+provide the local inequality used above.  Within the suffix-local certificate
+class the map is monotone,
+\[
+ \Transfer'(p)=\frac2{(1+p)^2}>0,
+\]
+so every certified improvement in \(p\) automatically improves the anytime
+ceiling as well.
+
+The exact p=1.65737 verifier, certificate, controlled-repair replay, generic
+suffix-local compiler, and independent audits all pass.  The principal
+independent audit is
+\begin{center}
+\small
+\texttt{audit\_joint\_tilted\_common\_multiplier\_p165737\_independent\_20260820\_v1.md}.
+\end{center}
+Its clean isolated replay and all transitive manifests pass.  The audit
+independently checks the 199 positive dual rows, all 162,735 pair costs,
+exact stationarity, the signed potential, finite-\(Q\) corrections, the
+global tangent caps, and the positive suffix reserve displayed above.
+
+This addendum is a research promotion of the paired ceilings, not a rewrite
+of the hash-pinned \(\sqrt3\) or \(607/366\) release reports.  It makes no
+claim that either remaining interval is closed.
+
+\end{document}
