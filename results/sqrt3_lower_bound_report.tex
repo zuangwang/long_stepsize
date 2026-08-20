@@ -2,7 +2,7 @@
 
 \usepackage[T1]{fontenc}
 \usepackage[margin=1in]{geometry}
-\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{amsmath,amssymb,amsthm,mathtools,mathrsfs}
 \IfFileExists{newtxtext.sty}{%
   \usepackage{newtxtext,newtxmath}%
 }{%
@@ -45,6 +45,10 @@
 \newcommand{\rankgain}{g}
 \newcommand{\criticalexp}{\beta_{\star}}
 \newcommand{\gdexp}{\beta_{\mathrm{GD}}}
+\newcommand{\anyexp}{\beta_{\mathrm{any}}}
+\newcommand{\anyrisk}{\mathcal A}
+\newcommand{\Transfer}{\mathcal T}
+\newcommand{\silver}{\mathrm{sil}}
 \newcommand{\threshold}{d_{\star}}
 \newcommand{\rankcut}{q_{\star}}
 \newcommand{\ent}{\operatorname{ent}}
@@ -54,7 +58,8 @@
 \newcommand{\propconst}{\Gamma_{\mathrm{prop}}}
 
 \title{\bfseries
-A Lower Bound at Exponent \(\sqrt{3}\) for Predetermined-Stepsize Gradient Descent}
+A Lower Bound at Exponent \(\sqrt{3}\) for Predetermined-Stepsize Gradient Descent\\
+\large and a Suffix-Local Transfer to the Anytime Regime}
 \author{Zuang Wang and Dandan Wang}
 
 \begin{document}
@@ -79,9 +84,27 @@ dimension at most \(T+1\) satisfying
  f(x_T)-f^\star
  \ge \lbconst LR^2(T+1)^{-\sqrt3}.
 \]
-The lower-bound proof is self-contained: the citations to Ma and Chen record
+The \(\sqrt3\) lower-bound proof is self-contained: the citations to Ma and Chen record
 provenance, while every shared component used below is rederived in full and
 no result from their paper is invoked as a premise.
+
+We also give a separate computer-assisted suffix-local transfer theorem.  The
+currently audited chronological joint-router certificate proves the paired
+ceilings
+\[
+ \boxed{
+ \gdexp\le\frac{165737}{100000}=1.65737,
+ \qquad
+ \anyexp\le\frac{331474}{265737}
+ =1.2473761651557743\ldots .}
+\]
+Here \(\anyexp\) requires one infinite schedule whose guarantee holds at every
+sufficiently late deterministic prefix.  The stronger transfer map
+\(\Transfer(p)=2p/(1+p)\) uses the internal suffix-local structure of the
+same certificate; it is not a black-box consequence of a numerical
+predetermined-horizon ceiling.  Both conclusions are supremal-exponent
+ceilings, with no claim of endpoint attainment or endpoint
+\(\mathrm{not}\text{-}o\).
 
 Starting from exact local and terminal identities proved below, and also
 present in Ma--Chen, the proof retains the full temporal inverse product
@@ -90,8 +113,10 @@ entropy inequality telescopes along the full selected path, cancels all
 interior entropy terms, and reduces the product estimate to a uniformly
 controlled pair of endpoint states.  This yields a critical-density
 alternative at density \(1/2\); cutoff propagation and a finite-cutoff
-argument then close at exponent \(\sqrt3\).  The gap to the silver-schedule
-upper exponent \(\log_2(1+\sqrt2)\) remains open. We use ChatGPT 5.6 Pro and
+argument then close at exponent \(\sqrt3\).  Together with the known silver
+constructions, the combined report places the predetermined exponent in
+\([1.2715533\ldots,1.65737]\) and the anytime exponent in
+\([1.1195452\ldots,1.2473762\ldots]\); both gaps remain open. We use ChatGPT 5.6 Pro and
 ChatGPT 5.6 Sol Ultra for developing part of the proof for this paper.
 \end{abstract}
 
@@ -199,7 +224,36 @@ The minimax exponent is
  \label{eq:minimax-exponent}
 \end{equation}
 \end{definition}
-The defining set is nonempty: the zero schedule and the smoothness
+
+For an infinite nonnegative schedule \(h=(h_0,h_1,\ldots)\), define its
+prefix risk by
+\begin{equation}
+ \anyrisk_n(h)
+ :=2\max_{1\le d\le n+1}
+ \mathcal R_{n,d}\bigl((h_0,\ldots,h_{n-1});0_d\bigr).
+ \label{eq:anytime-prefix-risk}
+\end{equation}
+
+\begin{definition}[Anytime exponent]
+\label{def:anytime-exponent}
+The anytime exponent is
+\begin{equation}
+ \anyexp
+ :=\sup\left\{q\ge0:
+ \begin{array}{l}
+ \text{there exist an infinite schedule \(h\), \(C<\infty\), and \(n_0\)}\\[-1mm]
+ \text{such that \(\anyrisk_n(h)\le C(n+1)^{-q}\) for every \(n\ge n_0\)}
+ \end{array}
+ \right\}.
+ \label{eq:anytime-exponent}
+\end{equation}
+\end{definition}
+
+Unlike \(\gdexp\), the exponent \(\anyexp\) permits only one infinite
+schedule and therefore couples the choices made at different stopping
+prefixes.  Section~\ref{sec:anytime-transfer} gives both the generic prefix
+transfer and a stronger suffix-local compiler.
+The defining set in Definition~\ref{def:minimax-exponent} is nonempty: the zero schedule and the smoothness
 inequality give \(\mathcal M_T\le1/2\).  The infimum in
 \eqref{eq:minimax-value} is taken separately at each announced horizon.
 Thus \(\gdexp\) describes horizon-dependent schedules; an
@@ -268,7 +322,8 @@ corollary; it is not used for Theorem~\ref{thm:main} or for
 \end{proof}
 
 The exponent comparison is summarized in Table~\ref{tab:exponents}.  For
-the lower-bound rows, the smaller exponent gives the stronger restriction.
+the universal-ceiling rows, the smaller exponent gives the stronger
+restriction.
 
 \begin{table}[ht]
 \centering
@@ -279,14 +334,20 @@ Result & exponent & numerical value\\
 Silver-schedule upper bound
   \cite{altschuler2025silver,zhangjiang2024}
   & \(s=\log_2(1+\sqrt2)\) & \(1.2715533\ldots\)\\
+Audited joint-router ceiling (predetermined)
+  & \(165737/100000\) & \(1.65737\)\\
 Theorem~\ref{thm:main}
   & \(\criticalexp=\sqrt3\) & \(1.7320508\ldots\)\\
 Ma--Chen (2026) lower bound \cite{machen2026}
   & every \(\gamma>\sqrt{2+\sqrt3}\) & \(\gamma>1.9318517\ldots\)\\
+Anytime silver construction \cite{zhangetal2025anytime}
+  & \(2s/(1+s)\) & \(1.1195452\ldots\)\\
+Suffix-local anytime ceiling
+  & \(331474/265737\) & \(1.2473762\ldots\)\\
 \bottomrule
 \end{tabular}
-\caption{Upper and lower exponents for horizon-dependent last-iterate
-convergence.}
+\caption{Achievable exponents and universal ceilings in the predetermined
+and anytime regimes.  For ceiling rows, smaller is stronger.}
 \label{tab:exponents}
 \end{table}
 
@@ -324,7 +385,8 @@ within their restricted class of basic composable schedules
 
 \paragraph{Anytime versus prescribed-horizon schedules.}
 An anytime guarantee uses one infinite stepsize sequence, independent of the
-stopping time, and must hold at every stopping time.  This differs from
+eventual deterministic horizon, and must hold at every sufficiently late
+deterministic prefix.  This differs from
 \eqref{eq:minimax-value}, where the length-\(T\) schedule may depend on the
 announced horizon.  Kornowski and Shamir posed whether anytime stepsize-only
 acceleration is possible \cite{kornowskishamir2024}.  Zhang, Lee, Du, and
@@ -339,7 +401,11 @@ proved that no single infinite schedule of strictly positive stepsizes can
 have worst-case objective-gap rate \(o(T^{-4/3})\)
 \cite{tsaietal2026anytime}.  Their quantifiers and strict-positivity
 assumption differ from the present horizon-dependent theorem, which permits
-nonnegative stepsizes.
+nonnegative stepsizes.  Section~\ref{sec:anytime-transfer} proves the stronger
+project-internal ceiling
+\(\anyexp\le331474/265737=1.2473761651\ldots\) by localizing the same
+audited chronological router at strict-record prefixes.  This conclusion is
+not inferred from the predetermined exponent alone.
 
 \paragraph{Relation to the Ma--Chen framework.}
 Ma and Chen prove that arbitrary predetermined nonnegative schedules admit a
@@ -390,7 +456,8 @@ claimed for the threshold, constant, or exponent.
 
 \paragraph{Proof roadmap.}
 Figure~\ref{fig:proof-roadmap} records every numbered result and the two final
-transfer steps.  Three scalar branches meet in
+transfer steps in the analytic \(\sqrt3\) proof.  The separate suffix-local
+anytime compiler appears in Section~\ref{sec:anytime-transfer}.  Three scalar branches meet in
 Proposition~\ref{prop:schedule-bound}; the geometric branch joins afterward
 to realize and rescale the hard instance.
 
@@ -1977,6 +2044,286 @@ term realizes the minimum in \eqref{eq:csch}.  Substitution into
  \label{eq:explicit-main-constant}
 \end{equation}
 
+\section{Suffix-local transfer and an improved anytime ceiling}
+\label{sec:anytime-transfer}
+
+This section records a second result alongside the self-contained analytic
+\(\sqrt3\) theorem.  It uses an independently audited, computer-assisted
+chronological joint-router certificate.  The distinction is important: the
+generic prefix argument below transfers a predetermined ceiling only at the
+same exponent, whereas the sharper map \(2p/(1+p)\) transfers the internal
+suffix-local certificate.
+
+\begin{proposition}[Black-box prefix transfer]
+\label{prop:any-black-box}
+If, for every \(T\), a universal finite-horizon theorem proves
+\[
+ \max_{1\le d\le T+1}\mathcal R_{T,d}(g;0_d)
+ \ge c(T+1)^{-p}
+\]
+for every length-\(T\) schedule \(g\), with \(c>0\) independent of both
+\(T\) and \(g\), then every infinite schedule obeys
+the same lower bound, up to the fixed normalization factor in
+\eqref{eq:anytime-prefix-risk}, at every prefix.  Consequently,
+\(\anyexp\le p\).
+\end{proposition}
+
+\begin{proof}
+Apply the finite-horizon theorem to the first \(T\) steps of the infinite
+schedule.  No compatibility beyond taking a prefix is needed.
+\end{proof}
+
+For the stronger transfer, fix \(0<a<1\) and put
+\begin{equation}
+ p:=1+a,\qquad b:=\frac2a,\qquad
+ \Theta_*:=\frac1{a(a+2)}=\frac1{p^2-1},\qquad
+ \Transfer(p):=\frac{2p}{1+p}=\frac{2(1+a)}{2+a}.
+ \label{eq:any-parameters}
+\end{equation}
+For a finite prefix, write its positive stepsize excesses in decreasing order
+as \(c_1\ge\cdots\ge c_r>0\), and define
+\begin{equation}
+ B:=1+\sum_{t<n}\min\{h_t,1\},\qquad
+ D_j:=B+\sum_{i=j+1}^r c_i.
+ \label{eq:any-ranked-state}
+\end{equation}
+Thus \(D_0=1+\sum_{t<n}h_t\), \(D_r=B\), \(B\le n+1\), and
+\(r\le n\).
+
+\begin{theorem}[Suffix-local transfer compiler]
+\label{thm:any-compiler}
+Suppose one fixed chronological ranked-path certificate has the following
+properties uniformly at every deterministic prefix.
+
+\begin{enumerate}
+\item The empty-chain hard instance gives, at every prefix,
+\begin{equation}
+ \anyrisk_n(h)\ge\frac1{2D_0-1}.
+ \label{eq:any-empty-arm}
+\end{equation}
+At each prefix whose last step is a strict record exceeding one, the
+strict-record hard instance gives
+\begin{equation}
+ c_1\le D_0\sqrt{\anyrisk_n(h)}.
+ \label{eq:any-record-arms}
+\end{equation}
+
+\item For every \(2\le q\le r\), all top-\(q\) excesses and all
+\(q-1\) chronological edges occur in a hard-instance bound
+\begin{equation}
+ \mathcal C_n(h)\ge\frac{c_{\rm J}}{D_q}
+ \exp\left\{\mu(z+q-S_v)
+ +\sum_{i=1}^{q-1}\Delta(v_i,v_{i+1})\right\},
+ \label{eq:any-chronological-path}
+\end{equation}
+where \(c_{\rm J}>0\), \(0<\mu\le1\), \(z\ge0\),
+\(S_v=\sum_i v_i\), and \((v_i)\) is a chronological permutation of
+\[
+ \widehat v_i=\frac{2D_q}{qc_i},\qquad 1\le i\le q.
+\]
+The normalized worst-case risk satisfies
+\(\anyrisk_n(h)\ge\mathcal C_n(h)\).
+
+\item Fix finite thresholds \(0<t_0<\cdots<t_{M-1}<\infty\), and set
+\[
+ \alpha_\ell:=\frac1q\#\{i:v_i\le t_\ell\},\qquad
+ k_\ell:=q\alpha_\ell,
+\]
+\[
+ \mathscr R_\ell(\alpha):=1+
+ 2\sum_{u=\ell}^{M-2}\frac{\alpha_{u+1}-\alpha_u}{t_u}
+ +\frac{2(1-\alpha_{M-1})}{t_{M-1}}.
+\]
+The exact denominator router, including zero occupancy, satisfies
+\[
+ \frac{D_{k_\ell}}{D_q}\le\mathscr R_\ell(\alpha).
+\]
+Every state row with positive dual weight is either a cumulative occupancy
+monotonicity row or a globally valid affine tangent row
+\[
+ \mathscr R_{\ell(m)}(\alpha)\ge T_m(\alpha_{\ell(m)}),
+ \qquad T_m(x)\le x^{-a}\quad(0<x\le1).
+\]
+There is no positive-weight mean row or other state row, and
+\[
+ H:=\max_m\sup_{0\le x\le1}T_m(x)<\infty.
+\]
+
+\item There are finite \(Q\) and \(B_0\) such that every supported state
+with \(q\ge Q\) satisfies the signed finite-rank estimate
+\[
+ \frac1q\sum_{i=1}^{q-1}\Delta(v_i,v_{i+1})\ge B_0.
+\]
+This estimate includes all physical edges, endpoint corrections, and the
+unbounded state group.  Its endpoint reserve
+\[
+ \mathfrak r:=B_0-\mu(2\Theta_*-1)
+\]
+is positive.  There is a finite localization factor \(\Lambda>1\) with
+\begin{equation}
+ \Lambda^a\ge H,
+ \qquad
+ \delta:=\mathfrak r-\frac{\mu b}{\Lambda}>0.
+ \label{eq:any-localization-reserve}
+\end{equation}
+\end{enumerate}
+
+Then no infinite predetermined schedule satisfies
+\(\anyrisk_n(h)=O(n^{-s})\) for any \(s>\Transfer(p)\).  Consequently,
+\begin{equation}
+ \boxed{\anyexp\le\Transfer(p)=\frac{2p}{1+p}.}
+ \label{eq:any-transfer}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Assume that one infinite schedule satisfies
+\(\anyrisk_n(h)\le A n^{-s}\) for some \(s>\Transfer(p)>1\).  The
+empty-chain arm rules out bounded steps, so there are arbitrarily late
+strict-record prefixes.  At such a prefix write
+\(\epsilon=\anyrisk_n(h)\), choose
+\[
+ \eta=\frac1{4\Lambda},
+ \qquad
+ k=\left\lfloor\frac{\eta}{\sqrt\epsilon}\right\rfloor,
+\]
+and let \(q\) minimize \(P_j:=D_jj^a\) over \(k\le j\le r\).
+For late records, \(k\ge\eta/(2\sqrt\epsilon)\).  The record arms imply
+\begin{equation}
+ D_m\ge(1-\eta)D_0\ge\frac{1-\eta}{2\epsilon}
+ \qquad(0\le m\le\min\{k,r\}).
+ \label{eq:any-record-mass}
+\end{equation}
+In particular, eventually \(r\ge k\).  Indeed, if \(r<k\), then
+\eqref{eq:any-record-mass} with \(m=r\) gives
+\(B=D_r\ge c/\epsilon\), contradicting \(B\le n+1\),
+\(\epsilon\le An^{-s}\), and \(s>1\).
+
+If \(q<\Lambda k\), then \(D_q>3D_0/4\), while suffix minimality and
+\(B\le n+1\), \(r\le n\) give
+\[
+ c\epsilon^{-(p+1)/2}
+ \le D_kk^a
+ \le\frac43D_qq^a
+ \le\frac43Br^a
+ \le\frac43(n+1)^p.
+\]
+Therefore
+\[
+ \epsilon\ge c'(n+1)^{-2p/(1+p)},
+\]
+contradicting \(s>\Transfer(p)\).
+
+Suppose instead that \(q\ge\Lambda k\), and put
+\(\tau=k/q\le1/\Lambda\).  Suffix minimality first gives the boundary floor
+\(0<\widehat v_i\le b\).  It also validates every supported tangent row.
+Indeed, if \(\alpha_\ell\ge\tau\), then \(k_\ell\ge k\) and
+\[
+ \mathscr R_\ell(\alpha)\ge\frac{D_{k_\ell}}{D_q}
+ \ge\left(\frac q{k_\ell}\right)^a
+ =\alpha_\ell^{-a}\ge T_m(\alpha_\ell).
+\]
+If \(\alpha_\ell<\tau\), then \(k_\ell<k\) and
+\[
+ \mathscr R_\ell(\alpha)\ge\frac{D_{k_\ell}}{D_q}
+ \ge\frac{D_k}{D_q}\ge\left(\frac qk\right)^a
+ \ge\Lambda^a\ge H\ge T_m(\alpha_\ell).
+\]
+The latter argument includes \(\alpha_\ell=0\), so no \(0^{-a}\) is
+evaluated.  Suffix minimality also yields weak reciprocal supermajorization
+against \(b((i-1/2)/q)^p\).  Convex midpoint quadrature then controls the
+actual full-path mean without deleting a vertex or edge:
+\begin{equation}
+ S_v\le q\left(2\Theta_*+\frac b\Lambda\right).
+ \label{eq:any-physical-mean}
+\end{equation}
+Since \(q\ge\Lambda k\ge c\epsilon^{-1/2}\ge c'n^{s/2}\), eventually
+\(q\ge Q\).  Item 4 and equations \eqref{eq:any-chronological-path},
+\eqref{eq:any-localization-reserve}, and \eqref{eq:any-physical-mean} imply
+\begin{equation}
+ \mathcal C_n(h)\ge c_{\rm J}\frac{e^{\delta q}}{D_q}.
+ \label{eq:any-far-arm}
+\end{equation}
+Since \(D_qq^a\le Br^a\le(n+1)^p\), the assumed risk upper bound and
+\eqref{eq:any-far-arm} force \(q=O(\log n)\).  On the other hand,
+\(q\ge\Lambda k\ge c\epsilon^{-1/2}\ge c'n^{s/2}\), a contradiction.
+The near and far branches prove \eqref{eq:any-transfer}.
+\end{proof}
+
+\begin{corollary}[Audited paired ceilings]
+\label{cor:any-instantiation}
+The independent finite-horizon audit of the chronological joint-router
+certificate at
+\[
+ p=\frac{165737}{100000},\qquad
+ a=\frac{65737}{100000},\qquad
+ \mu=\frac{8161}{10000}
+\]
+establishes \(\gdexp\le165737/100000\).  The same certificate satisfies
+every hypothesis of Theorem~\ref{thm:any-compiler}, which supplies the
+anytime ceiling below.  It has
+\[
+ Q=10^9,\qquad
+ B_0=\frac{118264177243}{10^{12}},\qquad
+ H=\frac{63159358713716857163}{1250000000000000000}<60.
+\]
+Taking \(\Lambda=10^6\), the remaining exact suffix reserve is
+\[
+ \delta=
+ \frac{133808620593933067}
+ {17468753169000000000000}>0.
+\]
+Consequently,
+\begin{equation}
+ \boxed{
+ \gdexp\le\frac{165737}{100000}=1.65737,
+ \qquad
+ \anyexp\le\frac{331474}{265737}
+ =1.2473761651557743\ldots .}
+ \label{eq:any-paired-result}
+\end{equation}
+\end{corollary}
+
+Writing \(s_\silver:=\log_2(1+\sqrt2)\), the known silver constructions
+and Corollary~\ref{cor:any-instantiation} give the combined intervals
+\begin{equation}
+ \boxed{
+ s_\silver\le\gdexp\le\frac{165737}{100000},
+ \qquad
+ \frac{2s_\silver}{1+s_\silver}
+ \le\anyexp\le\frac{331474}{265737}.}
+ \label{eq:any-intervals}
+\end{equation}
+Numerically, the constructive anytime endpoint is
+\(2s_\silver/(1+s_\silver)=1.119545204061651\ldots\).
+
+\begin{remark}[Transfer scope and evidence]
+\label{rem:any-scope}
+Theorem~\ref{thm:any-compiler} transfers a certificate, not merely a number.
+In particular, the implication
+\[
+ \gdexp\le p
+ \quad\Longrightarrow\quad
+ \anyexp\le\frac{2p}{1+p}
+\]
+is not a black-box theorem.  A finite-horizon induction may compress past the
+suffix selected at a strict-record prefix and fail to provide the local
+inequality used above.  Within the suffix-local certificate class the map is
+monotone because \(\Transfer'(p)=2/(1+p)^2>0\), so every certified decrease
+in \(p\) automatically decreases the anytime ceiling.
+
+The exact \(p=1.65737\) verifier, certificate, controlled-repair replay,
+generic suffix-local compiler, and independent audits all pass.  The audit
+checks the 199 positive dual rows, all 162,735 pair costs, exact stationarity,
+the signed potential, finite-\(Q\) corrections, global tangent caps, and the
+positive suffix reserve displayed above.  The companion source
+\texttt{predetermined\_anytime\_transfer\_addendum.tex} records the transfer
+audit boundary separately.  Corollary~\ref{cor:any-instantiation}
+is a computer-assisted research promotion; it does not claim endpoint
+attainment, a positive uniform endpoint constant, or an endpoint
+\(\mathrm{not}\text{-}o\) statement.
+\end{remark}
+
 \section{Discussion and limitations}
 \label{sec:limitations}
 
@@ -2010,15 +2357,22 @@ replaces their budget-equalization and matching analysis and strengthens the
 favorable-cutoff certificate sufficiently to reach exponent \(\sqrt3\); it
 does not assert that the resulting exponent is optimal.
 
-The silver-schedule constructions leave the nontrivial bracket
+The analytic theorem by itself gives the bracket
+\(\log_2(1+\sqrt2)\le\gdexp\le\sqrt3\).  The separately audited
+computer-assisted certificate and its suffix-local transfer sharpen the
+current combined intervals to
 \[
  \log_2(1+\sqrt2)
  \le \gdexp
- \le\sqrt3.
+ \le\frac{165737}{100000},
+ \qquad
+ \frac{2\log_2(1+\sqrt2)}{1+\log_2(1+\sqrt2)}
+ \le\anyexp
+ \le\frac{331474}{265737}.
 \]
-Closing this gap remains open.  In particular, the present result does not
-claim that the density threshold \(1/2\), the factor \(1/5\), or the
-exponent \(\sqrt3\) is optimal.
+Closing either gap remains open.  In particular, the report does not claim
+that the density threshold \(1/2\), the factor \(1/5\), the exponent
+\(\sqrt3\), or either computer-assisted endpoint is optimal or attained.
 
 
 \small
